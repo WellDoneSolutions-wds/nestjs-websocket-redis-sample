@@ -27,13 +27,13 @@ export class RedisPropagatorInterceptor<T>
 
     return next.handle().pipe(
       tap((data) => {
-        console.log('REVISAR socket.id');
+        console.log('REVISAR socket.id', socket.id);
 
-        this.redisPropagatorService.propagateEvent({
-          ...data,
-          socketId: (socket as any).id,
-          userId: socket.auth?.userId,
-        });
+        // this.redisPropagatorService.propagateEvent({
+        //   ...data,
+        //   socketId: (socket as any).id,
+        //   userId: socket.auth?.userId,
+        // });
       }),
     );
   }

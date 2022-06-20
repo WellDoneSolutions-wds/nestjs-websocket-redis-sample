@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { tap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { share, shareReplay, tap } from 'rxjs/operators';
 import { Server } from 'socket.io';
 import { RedisService } from '../redis/redis.service';
 import { SocketStateService } from '../socket-state/socket-state.service';
@@ -16,14 +17,36 @@ import {
 export class RedisPropagatorService {
   private socketServer: Server;
 
+  listenSendName$: Observable<any>;
+
   public constructor(
     private readonly socketStateService: SocketStateService,
     private readonly redisService: RedisService,
   ) {
-    this.redisService
+    this.listenSendName$ = this.redisService
       .fromEvent(REDIS_SOCKET_EVENT_SEND_NAME)
-      .pipe(tap(this.consumeSendEvent))
-      .subscribe();
+      .pipe(
+        tap((d) => {
+          console.log('DDDDDDDDDDDDDDDDDDDDDDDXXXXXXX');
+        }),
+        share(),
+        // shareReplay(),
+      );
+    this.listenSendName$.subscribe((x) => {
+      console.log(`Arrival Data`, x);
+    });
+
+    // .pipe(shareReplay());
+
+    // this.redisService
+    //   .fromEvent(REDIS_SOCKET_EVENT_SEND_NAME)
+    //   .pipe(
+    //     tap((d) => {
+    //       console.log('XXXXXXXXXXXXXXXXXXXAAAAAAAAAAAAA', d);
+    //     }),
+    //     tap(this.consumeSendEvent),
+    //   )
+    //   .subscribe();
 
     this.redisService
       .fromEvent(REDIS_SOCKET_EVENT_EMIT_ALL_NAME)
@@ -68,6 +91,8 @@ export class RedisPropagatorService {
   };
 
   public propagateEvent(eventInfo: RedisSocketEventSendDTO): boolean {
+    // console.log('propagateEvent');
+
     if (!eventInfo.userId) {
       return false;
     }
