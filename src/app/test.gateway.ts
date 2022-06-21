@@ -5,7 +5,7 @@ import {
   WebSocketGateway,
 } from '@nestjs/websockets';
 import { from, Observable, Subject } from 'rxjs';
-import { map, startWith, withLatestFrom } from 'rxjs/operators';
+import { filter, map, startWith, withLatestFrom } from 'rxjs/operators';
 import { Socket } from 'socket.io';
 import { RedisPropagatorInterceptor } from './shared/redis-propagator/redis-propagator.interceptor';
 import { RedisPropagatorService } from './shared/redis-propagator/redis-propagator.service';
@@ -37,12 +37,16 @@ export class EventsGateway {
     console.log('RECEIVE');
 
     return this.redisService.listenSendName$.pipe(
-      // withLatestFrom(this.params$),
+      withLatestFrom(this.params$),
       // startWith({}),
       map((message, i) => {
         console.log(`lllllllllll`, i);
 
         return { event: 'events1', data: message };
+      }),
+      filter((data: any) => {
+        const [eventRedis, params] = data;
+        return true;
       }),
     );
 
