@@ -17,6 +17,10 @@ async function bootstrap(): Promise<void> {
     redisPropagatorService,
   );
 
+  // | sala| 1 => *|Conexion|
+
+  //  { sal1:[ {c1, s3}, { c3 , s2}]}
+
   await adapter.connectToRedis();
 
   app.useWebSocketAdapter(adapter);

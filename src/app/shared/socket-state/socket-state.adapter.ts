@@ -46,12 +46,19 @@ export class SocketStateAdapter extends IoAdapter implements WebSocketAdapter {
     const server = super.createIOServer(port, options);
     this.redisPropagatorService.injectSocketServer(server);
 
+    // const wrapMiddlewareForSocketIo = middleware => (socket, next) => middleware(socket.request, {}, next);
+
+    // server.use(wrapMiddlewareForSocketIo(passport.initialize()));
+    // server.use(wrapMiddlewareForSocketIo(passport.authenticate(['jwt'])));
     server.use(async (socket: AuthenticatedSocket, next) => {
       const token =
         socket.handshake.query?.token ||
         socket.handshake.headers?.authorization;
+      console.log('XXXXXXXXXXXXXXX');
 
       if (!token) {
+        console.log('Xddddddddddddddddd');
+
         socket.auth = null;
 
         // not authenticated connection is still valid
@@ -60,9 +67,12 @@ export class SocketStateAdapter extends IoAdapter implements WebSocketAdapter {
       }
 
       try {
+        console.log('Xvvvvvvvvvvd');
+
         // fake auth
         socket.auth = {
-          userId: '1234',
+          userId: 'kenyi.lopez',
+          // company:'id',
         };
 
         return next();

@@ -1,6 +1,7 @@
 import { UseInterceptors } from '@nestjs/common';
 import {
   ConnectedSocket,
+  MessageBody,
   SubscribeMessage,
   WebSocketGateway,
 } from '@nestjs/websockets';
@@ -10,10 +11,11 @@ import { Socket } from 'socket.io';
 import { RedisPropagatorInterceptor } from './shared/redis-propagator/redis-propagator.interceptor';
 import { RedisPropagatorService } from './shared/redis-propagator/redis-propagator.service';
 
-// @UseInterceptors(RedisPropagatorInterceptor)
+@UseInterceptors(RedisPropagatorInterceptor)
 @WebSocketGateway({ cors: true })
 export class EventsGateway {
   params$ = new Subject();
+
   constructor(private redisService: RedisPropagatorService) {}
 
   @SubscribeMessage('changeParams')
@@ -25,35 +27,21 @@ export class EventsGateway {
     return { event: 'ds', data: 'd' };
   }
 
-  @SubscribeMessage('revei')
-  public findAll(@ConnectedSocket() client: Socket): Observable<any> {
-    // this.redisService.propagateEvent({
-    //   data: { a: 'x' },
-    //   event: 'revei',
-    //   socketId: client.id,
-    //   userId: 'd',
-    // });
-
-    console.log('RECEIVE');
+  @SubscribeMessage('setPreferencias')
+  public findAll(
+    @MessageBody() data: any,
+    @ConnectedSocket() client: Socket,
+  ): Observable<any> {
+    console.log(data);
+    // console.log(client);
 
     return this.redisService.listenSendName$.pipe(
-      withLatestFrom(this.params$),
-      // startWith({}),
-      map((message, i) => {
-        console.log(`lllllllllll`, i);
-
-        return { event: 'events1', data: message };
-      }),
-      filter((data: any) => {
-        const [eventRedis, params] = data;
+      filter((eventKakfa) => {
         return true;
       }),
+      map((message, i) => {
+        return { event: 'events1', data: { message, prefrencias: data } };
+      }),
     );
-
-    // return from([1, 2, 3]).pipe(
-    //   map((item) => {
-    //     return { event: 'events', data: item };
-    //   }),
-    // );
   }
 }
